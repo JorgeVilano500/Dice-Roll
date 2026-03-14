@@ -1,15 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { DiceFace } from "@/components";
+import { DiceFace, RollHistory, DiceCube3D, Modal } from "@/components";
 
-type RollEntry = {
-  id: string;
-  at: number;
-  sides: number;
-  rolls: number[];
-  sum: number;
-};
+import { RollEntry } from "../types/RollTypes";
 
 function DiceRollingComponent() {
   const [diceSides, setDiceSides] = useState<number>(6);
@@ -18,26 +12,62 @@ function DiceRollingComponent() {
   const [history, setHistory] = useState<RollEntry[]>([]);
   const [currentRolls, setCurrentRolls] = useState<number[]>([])
 
+  const [isRolling, setIsRolling] = useState<boolean>(false)
+
+  const [useBouncy, setUseBouncy] = useState<boolean>(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
+
+
   const rollDice = () => {
-    const rolls = Array.from({ length: diceCount }, () => Math.floor(Math.random() * diceSides) + 1);
-    const sum = rolls.reduce((a, b) => a + b, 0);
-    setResult(sum);
-    setCurrentRolls(rolls)
+    if(isRolling) return;
 
-    const entry: RollEntry = {
-      id: crypto.randomUUID(),
-      at: Date.now(),
-      sides: diceSides,
-      rolls,
-      sum,
-    };
+    setIsRolling(true)
 
-    setHistory((prev) => [entry, ...prev].slice(0, 8));
+    // shake with random faces for first couple animations
+    const start = Date.now();
+    const duration = 1000; 
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      if(now - start >= duration) {
+        clearInterval(interval);
+
+        // Final Real Roll
+        const rolls = Array.from(
+          {length: diceCount},
+          () => Math.floor(Math.random() * diceSides) + 1
+        )
+        const sum = rolls.reduce((a, b) => a + b, 0)
+        
+        setCurrentRolls(rolls)
+        setResult(sum);
+
+        const entry: RollEntry = {
+          id: crypto.randomUUID(),
+          at: Date.now(), 
+          sides: diceSides, 
+          rolls, 
+          sum
+        };
+        setHistory(prev => [entry, ...prev].slice(0, 8))
+        setIsRolling(false);
+
+
+      } else {
+        setCurrentRolls(
+          Array.from(
+            {length: diceCount}, 
+            () => Math.floor(Math.random() * diceSides) + 1
+          )
+        )
+      }
+
+    }, 80)
+
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full self-stretch justify-self-stretch">
-      <h1>Dice Roll</h1>
+    <div className="flex flex-col items-center justify-center bg-zinc-100 w-full h-full self-stretch justify-self-stretch">
 
       <div className="mt-3 flex items-center gap-3">
         <label className="flex items-center gap-2">
@@ -70,46 +100,49 @@ function DiceRollingComponent() {
         </label>
       </div>
 
-      <button className="mt-4 cursor-pointer bg-blue-500 text-white p-2 rounded-md" onClick={rollDice}>
-        Roll Dice
+      <button disabled={isRolling} className="mt-4 cursor-pointer bg-blue-500 text-white p-2 rounded-md disabled:opacity-50" onClick={rollDice}>
+        {isRolling ? "Rolling..." : "Roll Dice"}
       </button>
 
+    <div className="h-auto">
       {result !== null && (
-        <p className="mt-3 flex flex-row gap-6">
+        <p className="mt-3 flex flex-row gap-6 dice-container flex-wrap">
           {/* {result} */}
           {currentRolls.map((roll, index) =>
             diceSides === 6 && roll >= 1 && roll <= 6 ? (
-              <DiceFace
+              <div 
+                className={isRolling ? (useBouncy ? "dice-bounce" : "dice-shake"): ""}
+                // className={`${isRolling ? "dice-throw" : ""}`}
+                style={isRolling ? {animationDelay: `${index * 0.08}s`} : undefined}
+                 key={index}
+                  >
+              <DiceCube3D
                 key={index}
                 value={roll as 1| 2 | 3 | 4 | 5 | 6}
               />
+              </div>
             ) : (
-              <div key={index} className="flex items-center justify-center rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-600 shadow-md w-16 h-16 text-xl font-semibold">
+              <div key={index} className={`flex items-center justify-center rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-600 shadow-md w-16 h-16 text-xl font-semibold ${isRolling ? (useBouncy ? "dice-bounce": "dice-shake") : ""}`}>
                 {roll}
               </div>
             )
           )}
         </p>
       )}
+      </div>
 
-      {history.length > 0 && (
-        <div className="mt-6 w-full max-w-md">
-          <h2 className="font-semibold mb-2">Roll history</h2>
-          <ul className="flex flex-col gap-2">
-            {history.map((h) => (
-              <li key={h.id} className="border border-zinc-200 rounded p-3">
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="font-medium">
-                    {h.rolls.length}d{h.sides} = {h.sum}
-                  </span>
-                  <span className="text-xs text-zinc-500">{new Date(h.at).toLocaleTimeString()}</span>
-                </div>
-                <div className="text-sm text-zinc-700 mt-1">Rolls: {h.rolls.join(", ")}</div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <button onClick={() => setIsHistoryOpen(true)}>
+        Open Modal
+      </button>
+
+      <Modal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        title="History"
+      >
+        <RollHistory history={history} />
+      </Modal>
+
     </div>
   );
 }

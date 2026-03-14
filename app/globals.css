@@ -24,3 +24,80 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+@layer base { 
+  @keyframes dice-shake {
+    0% {transform: translate(0,0) rotate(0deg); }
+    20% {transform: translate(-3px,-3px) rotate(-5deg); }
+    40% {transform: translate(3px,2px) rotate(3deg); }
+    60% {transform: translate(-2px,3px) rotate(-3deg); }
+    80% {transform: translate(2px,-2px) rotate(2deg); }
+    100% {transform: translate(0,0) rotate(0deg); }
+  }
+  
+  .dice-shake {
+    animation: dice-shake 0.4s ease-in-out infinite;
+  }
+
+  @keyframes dice-bounce {
+    0% {transform: translate(0, 0) scale(1) rotate(0deg)}
+    10% {transform: translate(8px, -12px) scale(1.05) rotate(15deg)}
+    25% {transform: translate(-6px, 4px) scale(0.98) rotate(-10deg)}
+    40% {transform: translate(10px, -6px) scale(1.03) rotate(8deg)}
+    55% {transform: translate(-8px, 2px) scale(0.99) rotate(-6deg)}
+    70% {transform: translate(4px, -3px) scale(1.01) rotate(4deg)}
+    85% {transform: translate(-2px, 1px) scale(1) rotate(-2deg)}
+    100% {transform: translate(0, 0) scale(1) rotate(0deg)}
+  }
+
+  .dice-bounce {
+    animation: dice-bounce 0.6s ease-in-out infinite;
+  }
+
+  .dice-container { 
+    perspective: 1200px;
+    perspective-origin: center center;
+
+  }
+
+  .dice-throw {
+    transform-style: preserve-3d;
+    backface-visibility: hidden; 
+    animation: dice-throw 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) forwards; 
+  }
+
+  @keyframes dice-throw {
+    0% {
+      transform: translate(0, 0) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
+      opacity: 0.95;
+    }
+    8% {
+      transform: translate(30px, -40px) rotateX(60deg) rotateY(120deg) rotateZ(-15deg) scale(1.1);
+    }
+    25% {
+      transform: translate(-20px, -70px) rotateX(180deg) rotateY(280deg) rotateZ(30deg) scale(1.15);
+    }
+    45% {
+      transform: translate(25px, -50px) rotateX(300deg) rotateY(450deg) rotateZ(-20deg) scale(1.1);
+    }
+    65% {
+      transform: translate(-15px, -20px) rotateX(420deg) rotateY(600deg) rotateZ(10deg) scale(1.05);
+    }
+    80% {
+      transform: translate(5px, 8px) rotateX(480deg) rotateY(720deg) rotateZ(-5deg) scale(1);
+    }
+    90% {
+      transform: translate(0, -6px) rotateX(520deg) rotateY(750deg) rotateZ(0deg) scale(1);
+    }
+    95% {
+      transform: translate(0, 2px) rotateX(540deg) rotateY(760deg) rotateZ(0deg) scale(1);
+    }
+    100% {
+      transform: translate(0, 0) rotateX(540deg) rotateY(760deg) rotateZ(0deg) scale(1);
+    }
+  }
+
+
+}
+
