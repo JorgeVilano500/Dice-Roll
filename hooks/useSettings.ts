@@ -6,6 +6,8 @@ const STORAGE_KEYS = {
   useBouncy: "dice-useBouncy",
   soundEnabled: "dice-sound",
   hapticEnabled: "dice-haptic",
+  advantageDisadvantageMode: "dice-advantageDisadvantage",
+  higherLowerGameMode: "dice-higherLowerGame",
 } as const;
 
 function getStored<T>(key: string, defaultValue: T): T {
@@ -34,6 +36,11 @@ export function useSettings() {
   const [hapticEnabled, setHapticEnabledState] = useState(() =>
     getStored(STORAGE_KEYS.hapticEnabled, true)
   );
+  const [advantageDisadvantageMode, setAdvantageDisadvantageModeState] =
+    useState(() => getStored(STORAGE_KEYS.advantageDisadvantageMode, true));
+  const [higherLowerGameMode, setHigherLowerGameModeState] = useState(() =>
+    getStored(STORAGE_KEYS.higherLowerGameMode, false)
+  );
 
   const setUseBouncy = useCallback((v: boolean) => {
     setUseBouncyState(v);
@@ -50,6 +57,16 @@ export function useSettings() {
     setStored(STORAGE_KEYS.hapticEnabled, v);
   }, []);
 
+  const setAdvantageDisadvantageMode = useCallback((v: boolean) => {
+    setAdvantageDisadvantageModeState(v);
+    setStored(STORAGE_KEYS.advantageDisadvantageMode, v);
+  }, []);
+
+  const setHigherLowerGameMode = useCallback((v: boolean) => {
+    setHigherLowerGameModeState(v);
+    setStored(STORAGE_KEYS.higherLowerGameMode, v);
+  }, []);
+
   return {
     useBouncy,
     setUseBouncy,
@@ -57,5 +74,9 @@ export function useSettings() {
     setSoundEnabled,
     hapticEnabled,
     setHapticEnabled,
+    advantageDisadvantageMode,
+    setAdvantageDisadvantageMode,
+    higherLowerGameMode,
+    setHigherLowerGameMode,
   };
 }

@@ -56,6 +56,10 @@ type SettingsProps = {
   setSoundEnabled: (v: boolean) => void;
   hapticEnabled: boolean;
   setHapticEnabled: (v: boolean) => void;
+  advantageDisadvantageMode: boolean;
+  setAdvantageDisadvantageMode: (v: boolean) => void;
+  higherLowerGameMode: boolean;
+  setHigherLowerGameMode: (v: boolean) => void;
 };
 
 export function Settings({
@@ -65,9 +69,33 @@ export function Settings({
   setSoundEnabled,
   hapticEnabled,
   setHapticEnabled,
+  advantageDisadvantageMode,
+  setAdvantageDisadvantageMode,
+  higherLowerGameMode,
+  setHigherLowerGameMode,
 }: SettingsProps) {
   return (
     <div className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-700 -mx-1">
+      <SettingRow
+        label="Advantage / Disadvantage"
+        description="Roll 2 dice, take higher or lower"
+      >
+        <Toggle
+          checked={advantageDisadvantageMode}
+          onChange={setAdvantageDisadvantageMode}
+        />
+      </SettingRow>
+
+      <SettingRow
+        label="Higher or Lower"
+        description="5 points. Guess higher or lower to gain, wrong guess loses."
+      >
+        <Toggle
+          checked={higherLowerGameMode}
+          onChange={setHigherLowerGameMode}
+        />
+      </SettingRow>
+
       <SettingRow
         label="Animation"
         description="Shake or bouncy when rolling"
