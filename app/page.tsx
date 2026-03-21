@@ -1,14 +1,11 @@
-import Image from "next/image";
-import "./globals.css"
 import { Header, DiceRollingComponent } from "@/components";
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      
-        <Header />
-      <main className="flex h-[500px] w-full max-w-3xl flex-col items-center justify-between items-stretch  bg-white dark:bg-black sm:items-start">
-        <DiceRollingComponent />    
+    <div className="flex min-h-screen flex-col bg-background text-foreground font-sans">
+      <Header />
+      <main className="flex min-h-0 flex-1 flex-col items-center bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 sm:mx-auto sm:w-full sm:max-w-3xl">
+        <DiceRollingComponent />
       </main>
     </div>
   );

@@ -54,6 +54,7 @@ export function DiceCube3D({ value, size = 72, className = "" }: DiceCube3DProps
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    border: "1px solid rgba(0,0,0,0.10)",
   };
 
   return (
@@ -62,18 +63,19 @@ export function DiceCube3D({ value, size = 72, className = "" }: DiceCube3DProps
       style={{ width: size * 1.4, height: size * 1.3, perspective: "400px" }}
       aria-label={`Dice showing ${value}`}
     >
-      {/* Soft elliptical shadow */}
+      {/* Ground shadow */}
       <div
         style={{
           position: "absolute",
-          bottom: -4,
+          bottom: -6,
           left: "50%",
-          transform: "translateX(-50%)",
-          width: size * 0.9,
-          height: size * 0.2,
-          borderRadius: "50%",
-          backgroundColor: "rgba(0,0,0,0.12)",
-          filter: "blur(4px)",
+          transform: "translateX(-50%) rotate(-8deg)",
+          width: size * 1.05,
+          height: size * 0.34,
+          borderRadius: "999px",
+          background: "radial-gradient(closest-side, rgba(0,0,0,0.20), rgba(0,0,0,0.0) 72%)",
+          filter: "blur(8px)",
+          opacity: 0.85,
         }}
       />
 
@@ -95,35 +97,93 @@ export function DiceCube3D({ value, size = 72, className = "" }: DiceCube3DProps
             top: 0,
             left: half,
             transform: `translateX(-50%) rotateX(90deg) translateZ(${half}px)`,
-            backgroundColor: "#ffffff",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)",
+            backgroundImage: "linear-gradient(145deg, #ffffff 0%, #fbfbfb 55%, #f0f0f0 100%)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.85), inset 0 -10px 20px rgba(0,0,0,0.05)",
             overflow: "visible",
           }}
         >
           <PipGrid value={value} faceSize={size} />
         </div>
 
-        {/* Front face (slightly darker) - blank, no pips */}
+        {/* Left/front face (blank, no pips) - stronger definition */}
         <div
           style={{
             ...faceStyle,
             top: half * 0.9,
             left: half,
             transform: `translate(-50%, -50%) translateZ(${half}px)`,
-            backgroundColor: "#f5f5f5",
-            boxShadow: "inset 0 -1px 0 rgba(0,0,0,0.04)",
+            // Make the left face clearly separate from the page:
+            // - slightly darker overall
+            // - strong dark seam on the right (meeting the right face)
+            // - subtle outside shadow on the left edge
+            backgroundImage:
+              "linear-gradient(90deg, #efefef 0%, #e4e4e4 62%, #cdcdcd 100%), linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.07) 100%)",
+            // Slightly stronger outline so this face doesn't disappear into light backgrounds
+            border: "1px solid rgba(0,0,0,0.14)",
+            boxShadow: [
+              // stroke reinforcement (keeps edges crisp on white backgrounds)
+              "0 0 0 1px rgba(0,0,0,0.06)",
+              "inset 0 10px 18px rgba(255,255,255,0.14)",
+              "inset 0 -16px 26px rgba(0,0,0,0.14)",
+              // seam with right face
+              "inset -3px 0 0 rgba(0,0,0,0.18)",
+              "inset -1px 0 0 rgba(255,255,255,0.08)",
+              // outside separation from page (left edge + bottom) + crisp rim
+              "-8px 10px 18px rgba(0,0,0,0.10)",
+              "-2px 0 0 rgba(0,0,0,0.10)",
+            ].join(", "),
           }}
         />
 
-        {/* Right face (darkest - receives least light) - blank, no pips */}
+<div
+          style={{
+            ...faceStyle,
+            top: half * 0.9,
+            left: half,
+            transform: `translate(-100%, -50%)   rotateY(-90deg)`,
+            // Make the left face cleary separate from the page:
+            // - slightly darker overall
+            // - strong dark seam on the right (meeting the right face)
+            // - subtle outside shadow on the left edge
+            backgroundImage:
+              "linear-gradient(90deg, #efefef 0%, #e4e4e4 62%, #cdcdcd 100%), linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.07) 100%)",
+            // Slightly stronger outline so this face doesn't disappear into light backgrounds
+            border: "1px solid rgba(0,0,0,0.14)",
+            boxShadow: [
+              // stroke reinforcement (keeps edges crisp on white backgrounds)
+              "0 0 0 1px rgba(0,0,0,0.06)",
+              "inset 0 10px 18px rgba(255,255,255,0.14)",
+              "inset 0 -16px 26px rgba(0,0,0,0.14)",
+              // seam with right face
+              "inset -3px 0 0 rgba(0,0,0,0.18)",
+              "inset -1px 0 0 rgba(255,255,255,0.08)",
+              // outside separation from page (left edge + bottom) + crisp rim
+              "-8px 10px 18px rgba(0,0,0,0.10)",
+              "-2px 0 0 rgba(0,0,0,0.10)",
+            ].join(", "),
+          }}
+        />
+
+        {/* Right face (blank, no pips) */}
         <div
           style={{
             ...faceStyle,
             top: half * 0.7,
             left: half + half * 0.7,
             transform: `translate(-50%, -50%) rotateY(90deg) translateZ(${half}px)`,
-            backgroundColor: "#ebebeb",
-            boxShadow: "inset -1px 0 0 rgba(0,0,0,0.05)",
+            backgroundImage:
+              // Darken toward the far right edge so the plane reads clearly
+              "linear-gradient(135deg, #e9e9e9 0%, #dddddd 55%, #cfcfcf 100%)",
+            boxShadow: [
+              // interior lighting
+              "inset 12px 0 18px rgba(255,255,255,0.16)",
+              "inset -18px 0 26px rgba(0,0,0,0.12)",
+              // crisp crease on the left edge (where it meets the front face)
+              "inset 2px 0 0 rgba(0,0,0,0.14)",
+              "inset 1px 0 0 rgba(255,255,255,0.10)",
+              // slight lift from page
+              "6px 10px 18px rgba(0,0,0,0.06)",
+            ].join(", "),
           }}
         />
       </div>
