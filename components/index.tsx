@@ -6,3 +6,4 @@ export { D20Die } from "./ui/D20Die";
 export { Modal } from "./ui/Modal";
 export {RollHistory} from "./ui/RollHistory"
 export { ThemeToggle } from "./ui/ThemeToggle";
+export {Settings} from './features/Settings'

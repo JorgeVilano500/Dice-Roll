@@ -3,9 +3,9 @@ import { RiFileHistoryLine, RiSettings4Line } from "react-icons/ri";
 
 
 
-import { useState, useEffect } from "react";
-import { RollHistory, DiceCube3D, D20Die, Modal } from "@/components";
-
+import { useState, useRef } from "react";
+import { RollHistory, DiceCube3D, D20Die, Modal, Settings } from "@/components";
+import { useSettings } from "@/hooks/useSettings";
 import { RollEntry } from "../types/RollTypes";
 
 function DiceRollingComponent() {
@@ -13,28 +13,61 @@ function DiceRollingComponent() {
   const [diceCount, setDiceCount] = useState<number>(1);
   const [result, setResult] = useState<number | null>(null);
   const [history, setHistory] = useState<RollEntry[]>([]);
-  const [currentRolls, setCurrentRolls] = useState<number[]>([6])
-
-  const [isRolling, setIsRolling] = useState<boolean>(false)
-
-  const [useBouncy, setUseBouncy] = useState<boolean>(false);
+  const [currentRolls, setCurrentRolls] = useState<number[]>([6]);
+  const [isRolling, setIsRolling] = useState<boolean>(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
 
-  // Keep displayed dice in sync with count
-  useEffect(() => {
+  const {
+    useBouncy,
+    setUseBouncy,
+    soundEnabled,
+    setSoundEnabled,
+    hapticEnabled,
+    setHapticEnabled,
+  } = useSettings();
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  const playRollSound = () => {
+    if (!soundEnabled || typeof window === "undefined") return;
+    try {
+      if (!audioContextRef.current) audioContextRef.current = new AudioContext();
+      const ctx = audioContextRef.current;
+      if (ctx.state === "suspended") ctx.resume();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 120;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.08);
+    } catch {
+      // Ignore audio errors (e.g. autoplay blocked)
+    }
+  };
+
+  const triggerHaptic = () => {
+    if (!hapticEnabled || typeof navigator === "undefined" || !navigator.vibrate) return;
+    navigator.vibrate(30);
+  };
+
+  const handleCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const target = Math.max(1, Number(e.target.value) || 1);
+    setDiceCount(target);
     setCurrentRolls((prev) => {
-      const target = diceCount;
       if (prev.length === target) return prev;
       if (prev.length < target) {
-        const pad = Array.from(
-          { length: target - prev.length },
-          () => 1
-        );
-        return [...prev, ...pad];
+        return [
+          ...prev,
+          ...Array.from({ length: target - prev.length }, () => 1),
+        ];
       }
       return prev.slice(0, target);
     });
-  }, [diceCount]);
+  };
 
   const rollDice = () => {
     if(isRolling) return;
@@ -57,8 +90,10 @@ function DiceRollingComponent() {
         )
         const sum = rolls.reduce((a, b) => a + b, 0)
         
-        setCurrentRolls(rolls)
+        setCurrentRolls(rolls);
         setResult(sum);
+        playRollSound();
+        triggerHaptic();
 
         const entry: RollEntry = {
           id: crypto.randomUUID(),
@@ -91,7 +126,9 @@ function DiceRollingComponent() {
         <button className="cursor-pointer" onClick={() => setIsHistoryOpen(true)}>
           <RiFileHistoryLine size={25} />
         </button>
-        <RiSettings4Line size={25} />
+        <button className="cursor-pointer" onClick={() => setIsSettingsOpen(true)}>
+          <RiSettings4Line size={25} />
+        </button>
       </div>
 
       {/* Dice — centered in middle, grows to fill space */}
@@ -125,6 +162,11 @@ function DiceRollingComponent() {
           )
         )}
         </div>
+        {result !== null && (
+          <p className="mt-4 text-lg font-semibold text-zinc-600 dark:text-zinc-300">
+            Total: {result}
+          </p>
+        )}
       </div>
 
       {/* Controls — pinned near bottom */}
@@ -148,12 +190,12 @@ function DiceRollingComponent() {
           </label>
           <label className="flex flex-col items-center gap-1.5">
             <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Count</span>
-            <input
-              type="number"
-              min={1}
-              max={50}
-              value={diceCount}
-              onChange={(e) => setDiceCount(Math.max(1, Number(e.currentTarget.value)))}
+          <input
+            type="number"
+            min={1}
+            max={50}
+            value={diceCount}
+            onChange={handleCountChange}
               className="w-20 rounded-lg border border-zinc-300 bg-white px-3 py-2 dark:border-zinc-600 dark:bg-zinc-900"
             />
           </label>
@@ -166,6 +208,21 @@ function DiceRollingComponent() {
           {isRolling ? "Rolling..." : "Roll Dice"}
         </button>
       </div>
+
+      <Modal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        title="Settings"
+      >
+        <Settings
+          useBouncy={useBouncy}
+          setUseBouncy={setUseBouncy}
+          soundEnabled={soundEnabled}
+          setSoundEnabled={setSoundEnabled}
+          hapticEnabled={hapticEnabled}
+          setHapticEnabled={setHapticEnabled}
+        />
+      </Modal>
 
       <Modal
         isOpen={isHistoryOpen}
